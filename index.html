@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#08111f" />
+  <meta name="description" content="Калькулятор экономики междугороднего трансфера: прибыль, топливо, подача, обратка и минимальный тариф." />
+  <title>Экономика межгорода</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2307111f'/%3E%3Cpath d='M13 39h38l-5-14H20z' fill='%2344e2a8'/%3E%3Ccircle cx='22' cy='43' r='6' fill='%23f6f8fb'/%3E%3Ccircle cx='42' cy='43' r='6' fill='%23f6f8fb'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Калькулятор водителя</p>
+        <h1>Экономика межгорода</h1>
+        <p class="hero-copy">Показывает, стоит ли брать заказ, ещё до выезда.</p>
+      </div>
+      <button class="ghost-button" id="resetButton" type="button">Сбросить</button>
+    </header>
+
+    <section class="panel inputs-panel" aria-labelledby="inputsTitle">
+      <div class="section-heading">
+        <div>
+          <span class="step">01</span>
+          <h2 id="inputsTitle">Параметры рейса</h2>
+        </div>
+        <select id="scenarioSelect" aria-label="Готовый сценарий">
+          <option value="custom">Свой расчёт</option>
+          <option value="near">Ближний рейс</option>
+          <option value="airport">Аэропорт</option>
+          <option value="long">Дальний рейс</option>
+        </select>
+      </div>
+
+      <div class="class-tabs" role="group" aria-label="Класс автомобиля">
+        <button type="button" data-class="economy">Эконом <b>25 ₽/км</b></button>
+        <button class="active" type="button" data-class="comfort">Комфорт <b>35 ₽/км</b></button>
+        <button type="button" data-class="comfortPlus">Комфорт+ <b>45 ₽/км</b></button>
+      </div>
+
+      <div class="form-grid">
+        <label class="field emphasis">
+          <span>Расстояние с клиентом</span>
+          <div class="input-wrap"><input id="tripKm" type="number" min="1" step="1" inputmode="decimal" value="300" /><i>км</i></div>
+        </label>
+        <label class="field emphasis">
+          <span>Тариф клиенту</span>
+          <div class="input-wrap"><input id="tariff" type="number" min="1" step="1" inputmode="decimal" value="35" /><i>₽/км</i></div>
+        </label>
+        <label class="field">
+          <span>Подача до клиента</span>
+          <div class="input-wrap"><input id="pickupKm" type="number" min="0" step="1" inputmode="decimal" value="20" /><i>км</i></div>
+        </label>
+        <label class="field">
+          <span>Обратный путь</span>
+          <div class="input-wrap"><input id="returnKm" type="number" min="0" step="1" inputmode="decimal" value="300" /><i>км</i></div>
+        </label>
+        <label class="field">
+          <span>Расход топлива</span>
+          <div class="input-wrap"><input id="consumption" type="number" min="0" step="0.1" inputmode="decimal" value="8" /><i>л/100</i></div>
+        </label>
+        <label class="field">
+          <span>Цена топлива</span>
+          <div class="input-wrap"><input id="fuelPrice" type="number" min="0" step="0.1" inputmode="decimal" value="62" /><i>₽/л</i></div>
+        </label>
+        <label class="field">
+          <span>Износ и ТО</span>
+          <div class="input-wrap"><input id="runningCost" type="number" min="0" step="0.5" inputmode="decimal" value="8" /><i>₽/км</i></div>
+        </label>
+        <label class="field">
+          <span>Прочие расходы</span>
+          <div class="input-wrap"><input id="otherCosts" type="number" min="0" step="100" inputmode="decimal" value="0" /><i>₽</i></div>
+        </label>
+      </div>
+
+      <div class="probability-card">
+        <div>
+          <span>Вероятность обратного заказа</span>
+          <strong id="probabilityValue">30%</strong>
+        </div>
+        <input id="returnProbability" type="range" min="0" max="100" step="5" value="30" aria-label="Вероятность обратного заказа" />
+        <div class="range-labels"><span>Пустой возврат</span><span>Обратка найдётся</span></div>
+      </div>
+
+      <details>
+        <summary>Цель по прибыли и тариф обратки</summary>
+        <div class="form-grid details-grid">
+          <label class="field">
+            <span>Желаемая прибыль</span>
+            <div class="input-wrap"><input id="targetProfit" type="number" min="0" step="500" inputmode="decimal" value="5000" /><i>₽</i></div>
+          </label>
+          <label class="field">
+            <span>Тариф на обратку</span>
+            <div class="input-wrap"><input id="returnTariff" type="number" min="0" step="1" inputmode="decimal" value="35" /><i>₽/км</i></div>
+          </label>
+        </div>
+      </details>
+    </section>
+
+    <section class="result-layout" aria-live="polite">
+      <article class="verdict-card panel" id="verdictCard">
+        <div class="section-heading">
+          <div><span class="step">02</span><h2>Решение</h2></div>
+          <span class="status-pill" id="statusPill">Выгодно</span>
+        </div>
+        <div class="profit-row">
+          <div>
+            <span>Ожидаемая прибыль</span>
+            <strong id="expectedProfit">0 ₽</strong>
+          </div>
+          <div class="margin-block">
+            <span>Маржа</span>
+            <strong id="marginPercent">0%</strong>
+          </div>
+        </div>
+        <p class="verdict-copy" id="verdictCopy"></p>
+        <div class="meter" aria-hidden="true"><span id="profitMeter"></span></div>
+        <div class="metric-grid">
+          <div><span>Выручка сейчас</span><b id="outboundRevenue">0 ₽</b></div>
+          <div><span>Выручка с учётом обратки</span><b id="expectedRevenue">0 ₽</b></div>
+          <div><span>Все расходы</span><b id="totalCosts">0 ₽</b></div>
+          <div><span>Если назад пустым</span><b id="worstProfit">0 ₽</b></div>
+        </div>
+      </article>
+
+      <article class="panel breakdown-card">
+        <div class="section-heading compact"><div><span class="step">03</span><h2>Из чего сложилось</h2></div></div>
+        <div class="breakdown-list">
+          <div><span>Топливо <small id="fuelLiters"></small></span><b id="fuelCost">0 ₽</b></div>
+          <div><span>Износ и обслуживание</span><b id="wearCost">0 ₽</b></div>
+          <div><span>Прочие расходы</span><b id="otherCostOutput">0 ₽</b></div>
+          <div class="total"><span>Общий пробег</span><b id="totalKm">0 км</b></div>
+          <div><span>Ожидаемо платный</span><b id="paidKm">0 км</b></div>
+          <div><span>Ожидаемо холостой</span><b id="emptyKm">0 км</b></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel rates-panel" aria-labelledby="ratesTitle">
+      <div class="section-heading">
+        <div><span class="step">04</span><h2 id="ratesTitle">Минимально выгодный тариф</h2></div>
+        <button type="button" class="info-button" id="infoButton" aria-expanded="false">Как считаем?</button>
+      </div>
+      <p class="rates-intro">Ставка, которая покрывает все расходы и даёт заданную прибыль. Базовый тариф класса не занижаем.</p>
+      <div class="rate-cards" id="rateCards"></div>
+      <div class="formula-note" id="formulaNote" hidden>
+        <b>Формула:</b> (все расходы + желаемая прибыль − ожидаемая выручка обратки) ÷ километры с клиентом. Итог не ниже базовой ставки класса.
+      </div>
+    </section>
+  </main>
+
+  <footer>Все суммы — оценка. Платные дороги, комиссия диспетчера и проживание добавляются в «Прочие расходы».</footer>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
